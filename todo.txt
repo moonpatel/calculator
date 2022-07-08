@@ -1,0 +1,8 @@
+TO DO:
+=> Reassigning values to already created variables.
+=> Add some constants.
+=> Fix the code for following testcases:
+    1/4/7/5;
+
+DONE:
+=> Variables can now be declared but cannot be used. Allow using the variables in expression. 

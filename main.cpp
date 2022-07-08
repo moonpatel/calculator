@@ -50,46 +50,36 @@ map<string,double> variables;
 
 
 int main() {
-    // welcome message
     cout << "WELCOME" << "\n";
-    // int num;
-    // cin >> num;
 
-    while(true) {
-        // print main menu and get user choice
-        int choice = mainMenu();
-    // do what the input says
-    try {
-        switch(choice) {
-            // handles calculation
-            case CALCULATE_EXPRESSION:
-                calculate();
-                break;
+    // calculate
+    calculate();
 
-            // handles number conversion
-            case NUMBER_SYSTEM:
-                numberConverter();
-                break;
+    // while(true) {
+    //     // print main menu and get user choice
+    //     int choice = mainMenu();
+    // // do what the input says
+    // try {
+    //     switch(choice) {
+    //         // handles calculation
+    //         case CALCULATE_EXPRESSION:
+    //             calculate();
+    //             break;
 
-            // handles matrix calculations
-            // case MATRIX_CALC:
-            //     matrixCalc();
-            //     break;
+    //         // quit the program
+    //         case 0:
+    //             return 0;
 
-            // quit the program
-            case 0:
-                return 0;
-
-            default:
-            // to be done later
-                break;
-            }
-        }
-    catch(runtime_error& e) {
-        cout << e.what() << endl;
-        return 1;
-        }
-    }
+    //         default:
+    //         // to be done later
+    //             break;
+    //         }
+    //     }
+    // catch(runtime_error& e) {
+    //     cout << e.what() << endl;
+    //     return 1;
+    //     }
+    // }
 
     return 0;
 }

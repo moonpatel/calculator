@@ -79,34 +79,19 @@ Token Token_stream::get()
         return Token{'~', d};
     }
 
-    // pi
-    case 'p':
-    {
-        std::cin >> ch;
-        if (ch == 'i')
-            return Token{PI_CHAR, 0};
-        else
-            throw std::runtime_error("bad format");
-    }
-
-    // eulers constant
-    case 'e':
-        return Token{EULER_CONSTANT_CHAR, 0};
-
-    // a square root function
-    case 'r':
-        return Token{ch, 0};
-
     default:
-        if(isalpha(ch)) {
-            std::cin.putback(ch);
+        if (isalpha(ch) || ch == '_')
+        {
             std::string str;
-            std::cin >> str;
-            if(str==declaration_keyword) return Token{LET};
-            return Token{NAME,str};
+            str += ch;
+            while (std::cin.get(ch) && (isalpha(ch) || isdigit(ch)))
+                str += ch;
+            std::cin.putback(ch);
+            if (str == declaration_keyword)
+                return Token{LET};
+            return Token{NAME, str};
         }
-        throw std::runtime_error("Bad token"); // some bad token obtained in input stream
-        // return Token{};
+        throw std::runtime_error("Error in Token_stream::get()"); // some bad token obtained in input stream
     }
 }
 
@@ -116,14 +101,14 @@ void Token_stream::unget(Token token)
 {
     if (!isFull)
     {
-        buffer.push(Token{token.kind, token.value}); // store the token in buffer queue
+        Token t;
+        t.kind = token.kind;
+        t.value= token.value;
+        t.name = token.name;
+        buffer.push(t); // store the token in buffer queue
         isFull = true;
         return;
     }
-    // else {
-    //     throw std::runtime_error("Buffer is already full");     // the buffer is already full
-    //     return;
-    // }
 }
 
 // clear buffer
@@ -214,7 +199,7 @@ double primary()
         double d = expression(); // read an expression
         Token t = ts.get();
         if (t.kind != ')')
-            throw std::runtime_error("bad format");
+            throw std::runtime_error("Bad format => Error in primary()");
         else
             return d;
     }
@@ -227,58 +212,29 @@ double primary()
     case NUM_KIND:
         return token.value;
 
-    // primary is pi
-    case PI_CHAR:
-        return PI;
-
-    // primary is euler's constant
-    case EULER_CONSTANT_CHAR:
-        return EULER_CONSTANT;
-
-    // primary is a log function
-    case 'l':
-    {
-        std::cin.unget();
-        char *ch;
-        std::cin.get(ch, INT32_MAX, '(');
-        double d = expression();
-        return std::log(d);
-    }
-
-    case 'r':
-    {
-        char c;
-        std::cin >> c;
-        if (c == 't')
-        {
-            double d = primary();
-            if (d < 0)
-                throw std::runtime_error("root function cannot have negative argument");
-            else
-                return std::sqrt(d);
-        }
-        else
-            throw std::runtime_error("bad format");
-    }
+    case NAME:
+        return variables[token.name];
 
     // some error occured
     default:
-        throw std::runtime_error("bad format");
+        throw std::runtime_error("Bad format => Error in primary()");
     }
 }
 
-
-bool is_defined(std::string var) {
+bool is_defined(std::string var)
+{
     auto itr = variables.find(var);
-    if(itr!=variables.end())
+    if (itr != variables.end())
         return true;
     else
         return false;
 }
-double define_name(std::string var, double val) {
-    if(is_defined(var))
+double define_name(std::string var, double val)
+{
+    if (is_defined(var))
         throw var;
-    else {
+    else
+    {
         variables[var] = val;
         return val;
     }
@@ -321,21 +277,24 @@ double declaration()
     try
     {
         Token token = ts.get();
-        if(token.kind!=NAME)
-            throw std::runtime_error("Name expected in declaration");
+        if (token.kind != NAME)
+            throw std::runtime_error("Name expected in declaration => Error in declaration()");
         std::string var = token.name;
-        if((token = ts.get()).kind!='=')
-            throw std::runtime_error("= missing in the declaration of the variable" + token.name);
+        if ((token = ts.get()).kind != '=')
+            throw std::runtime_error("= missing in the declaration of the variable" + token.name + " => Error in declaration()");
 
-        double val=expression();
+        double val = expression();
 
-        return define_name(var,val);
-    } catch(std::runtime_error &e) {
-        std::cout << "Oops! Error occured in Token.cpp -> declaration()";
-        std::cout << e.what() << "\n";
+        return define_name(var, val);
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cout << "Oops! Error occured in Token.cpp => declaration()";
+        std::cout << e.what() << std::endl;
         return 0;
     }
-    catch(std::string &str) {
+    catch (std::string &str)
+    {
         std::cout << "Variable " << str << " already declared.\n";
         return 0;
     }
@@ -385,7 +344,12 @@ void calculate()
             double ans = statement();
             ts.flush(); // flush out remaining TERMINATOR(';')
 
-            std::cout << RESULT << std::fixed << std::setprecision(5) << ans << std::endl; // print the RESULT
+            // do not print trailing zeroes after decimal point if number is an integer
+            long long int ans_int = ans;
+            if(ans_int-ans==0)
+                std::cout << RESULT << ans_int << std::endl; // print the RESULT
+            else
+                std::cout << RESULT << ans << std::endl; // print the RESULT
         }
         catch (std::runtime_error &e)
         {
