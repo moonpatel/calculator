@@ -1,8 +1,18 @@
 TO DO:
-=> Reassigning values to already created variables.
-=> Add some constants.
+=> Add some functions
+=> Add HELP feature
+=> Wrap variables and constants map into a class along with its getters and setters and other functions
+=> Print result on entering '\n' instead of ';'
+=> Add commands to the program like quit and help for example
+=> Allow the user to declare constants
+=> Add an int-only mode where calculations are done only in integers and error is shown from
+   overflow and underflow
 => Fix the code for following testcases:
-    1/4/7/5;
+    > 1/4/7/5;
 
 DONE:
 => Variables can now be declared but cannot be used. Allow using the variables in expression. 
+=> Reassigning values to already created variables.
+=> Add some constants
+=> testcases:
+    > num; (shows errors)

@@ -31,6 +31,8 @@ Input comes from cin through the Token_stream called ts
 #include <string>
 #include <queue>
 
+extern std::map<std::string, double> variables;
+extern std::map<std::string, double> constants;
 
 // Token class has two members kind and value
 // kind - represents the operator(+,- and so on) and represents a number if kind is '~'
@@ -61,17 +63,17 @@ public:
 
 extern Token_stream ts; // used for input output of tokens in the program
 
+void calculate();       // handles the expression calculation option
+
 // parser functions
-double expression();    // read an expression
-double term();          // read a term
-double primary();       // read a primary
-double declaration();   // read a declaration
-double statement();     // read a statement
+double statement();                 // read a statement
+double declaration();               // read a declaration
+double assign(std::string name);  // read a reassignment
+double expression();                // read an expression
+double term();                      // read a term
+double primary();                   // read a primary
 
 bool is_defined(std::string var);
 double define_name(std::string var, double val);
-
-bool ask();     // ask user whether to continue or exit program when an error occurs
-void calculate();       // handles the expression calculation option
 
 #endif

@@ -1,3 +1,30 @@
+/*
+==================GRAMMAR FOR EXPRESSION CALCULATOR===============
+Expression:
+    Term
+    Term + Expression
+    Term - Expression
+
+Term:
+    Primary
+    Primary * Term
+    Primary / Term
+
+Primary:
+    -Number
+    Number
+    constants like pi, e and so on
+    '('Expression')'
+    -'('Expression')'
+
+Number:
+    Floating point literal
+    Integer
+    results of functions like log(a,b), rt(a)
+
+Input comes from cin through the Token_stream called ts
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -5,8 +32,6 @@
 
 #include "Token.h"
 #include "utils.h"
-
-extern std::map<std::string, double> variables;
 
 //=====================================================================================
 // Token class member functions
@@ -38,10 +63,10 @@ Token Token_stream::get()
 {
     if (isFull)
     {
-        isFull = false; // set isFull to false indicating buffer queue is now empty
         Token temp = buffer.front();
-        buffer.pop(); // clear the buffer queue
-        return temp;  // return  a copy of element removec from queue
+        buffer.pop();             // clear the buffer queue
+        isFull = !buffer.empty(); // set isFull to false indicating buffer queue is now empty
+        return temp;              // return a copy of element removec from queue
     }
 
     // if the buffer is empty
@@ -59,7 +84,7 @@ Token Token_stream::get()
     case '(':
     case ')':
     case '=':
-        return Token{ch, 0}; // return a Token
+        return Token{ch, 0}; // return a Token(kind,value)
 
     // the token is a number
     case '0':
@@ -89,6 +114,8 @@ Token Token_stream::get()
             std::cin.putback(ch);
             if (str == declaration_keyword)
                 return Token{LET};
+            else if (is_defined(str, constants))
+                return Token{CONSTANT, str};
             return Token{NAME, str};
         }
         throw std::runtime_error("Error in Token_stream::get()"); // some bad token obtained in input stream
@@ -99,16 +126,13 @@ Token Token_stream::get()
 // The character is stored in the buffer member of the Token_stream class
 void Token_stream::unget(Token token)
 {
-    if (!isFull)
-    {
-        Token t;
-        t.kind = token.kind;
-        t.value = token.value;
-        t.name = token.name;
-        buffer.push(t); // store the token in buffer queue
-        isFull = true;
-        return;
-    }
+    Token t;
+    t.kind = token.kind;
+    t.value = token.value;
+    t.name = token.name;
+    buffer.push(t); // store the token in buffer queue
+    isFull = !buffer.empty();
+    return;
 }
 
 // clear buffer
@@ -178,7 +202,7 @@ void calculate()
 // READ A STATEMENT
 // Statement:
 //      declaration
-//      reassignment
+//      assignment
 //      expression
 double statement()
 {
@@ -187,6 +211,19 @@ double statement()
     {
     case LET:
         return declaration();
+    case NAME:
+    case CONSTANT:
+    {
+        Token token2 = ts.get();
+        if (token2.kind == '=')
+            return assign(token.name);
+        else
+        {
+            ts.unget(token);
+            ts.unget(token2);
+            return expression();
+        }
+    }
     default:
         ts.unget(token);
         return expression();
@@ -224,10 +261,21 @@ double declaration()
     }
 }
 
-// READ A REASSIGNMENT
+// READ AN ASSIGNMENT
 //      Name "=" Expression
-double reassign()
+double assign(std::string name)
 {
+    // check if variable is already defined or not
+    if (!is_defined(name, variables))
+        throw std::runtime_error("Error in reassign() => variable \'" + name + "\' not declared");
+    // or 'name' is a constant
+    else if(!is_defined(name, constants))
+        throw std::runtime_error("Error in assign() => cannot assign value to constants");
+    // otherwise add variable 'name'
+    else
+        variables[name] = expression();
+
+    return variables[name];
 }
 
 // READ AN EXPRESSION
@@ -284,7 +332,7 @@ double term()
     }
 }
 
-// read a Primary
+// READ A PRIMARY
 //      (+or-)Number
 //      (+or-)'('Expression')'
 //      variables
@@ -323,51 +371,24 @@ double primary()
     }
 }
 
-bool is_defined(std::string var)
+// check if a value exists for 'var' in map 'm'
+bool is_defined(std::string var, const std::map<std::string, double> &m)
 {
-    auto itr = variables.find(var);
-    if (itr != variables.end())
+    auto itr = m.find(var);
+    if (itr != m.end())
         return true;
     else
         return false;
 }
 double define_name(std::string var, double val)
 {
-    if (is_defined(var))
+    if (is_defined(var, variables))
         throw var;
+    else if (var == "let")
+        throw std::runtime_error("Error in define_name() => \'let\' is a keyword\n");
     else
     {
         variables[var] = val;
         return val;
     }
 }
-
-// ask whether to continue or exit when an error occurs
-// bool ask() {
-//     while(true) {
-
-//     std::cout << "Do you want to continue(y/n)?" << std::endl;
-//     printline();
-//     char choice;
-//     std::cout << PROMPT;
-//     std::cin >> choice;
-
-//     std::cin.ignore(10,'\n');   // ignore the remaining data
-
-//     switch(choice) {
-//         case 'y':
-//         case 'Y':
-//             return 0;
-
-//         case 'n':
-//         case 'N':
-//             return 1;
-
-//         default:
-//             printline();
-//             std::cout << "Incorrect choice" << std::endl;
-//             break;
-//         }
-//     }
-// }
-

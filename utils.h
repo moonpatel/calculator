@@ -13,19 +13,10 @@ const char ADD          = '+';
 const char SUBTRACT     = '-';
 const char MULTIPLY     = '*';
 const char DIVIDE       = '/';
-const char OPEN_PARA    = '(';
-const char CLOSE_PARA   = ')';
+const char OPEN_PRNTHESIS    = '(';
+const char CLOSE_PRNTHESIS   = ')';
 const char PI_CHAR      = 'P';
-const char EULER_CONSTANT_CHAR = 'E';
 const std::string LINE  = "-------------------------------------------------------------------------------------------";
-
-const int CALCULATE_EXPRESSION = 1;
-const int NUMBER_SYSTEM = 2;
-const int MATRIX_CALC = 3;
-
-// Scientific constants
-const double PI = 3.14159265359;            // pi
-const double EULER_CONSTANT  = 2.71828;     // e
 
 // codes for bases
 const int BINARY_BASE = 2;
@@ -41,6 +32,7 @@ const char HEXADECIMAL  = '4';
 
 const char LET = 'L';
 const char NAME = 'N';
+const char CONSTANT = 'C';
 const std::string declaration_keyword = "let";
 
 // handle the processes of the main menu and return the choice entered
