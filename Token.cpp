@@ -103,7 +103,7 @@ void Token_stream::unget(Token token)
     {
         Token t;
         t.kind = token.kind;
-        t.value= token.value;
+        t.value = token.value;
         t.name = token.name;
         buffer.push(t); // store the token in buffer queue
         isFull = true;
@@ -119,12 +119,118 @@ void Token_stream::flush()
         buffer.pop();
 }
 
+// handle the expression calculation part
+void calculate()
+{
+    std::cout << "Expression calculator program" << std::endl;
+    std::cout << "Please enter the expression you want to calculate below" << std::endl;
+    std::cout << "(NOTE: Enter q to QUIT and ; after the end of an expression)" << std::endl;
+    printline();
+
+    while (true)
+    {
+        try
+        {
+            std::cout << PROMPT;
+            Token token = ts.get();
+
+            // check whether input is expression or QUIT command
+            if (token.kind == QUIT)
+                return; // exit
+            else if (token.kind == TERMINATOR)
+                continue; // read another expression
+            else
+                ts.unget(token); // input is expression, unget and read expression()
+
+            // calculate the expression
+            double ans = statement();
+            ts.flush(); // flush out remaining TERMINATOR(';')
+
+            // do not print trailing zeroes after decimal point if number is an integer
+            long long int ans_int = ans;
+            if (ans_int - ans == 0)
+                std::cout << RESULT << ans_int << std::endl; // print the RESULT
+            else
+                std::cout << RESULT << ans << std::endl; // print the RESULT
+        }
+        catch (std::runtime_error &e)
+        {
+            printline();
+            std::cout << "Error! ";
+            std::cout << e.what() << std::endl;
+            printline();
+
+            std::cin.ignore(100, '\n'); // ignore until ; is reached
+            ts.flush();                 // flush buffer
+
+            // bool exit = ask();     // to continue or exit program?
+            // if(exit)
+            //     break;
+            // }
+        }
+    }
+}
+
 //=====================================================================================
 // Parsing functions for our calculator
 //=====================================================================================
 
+// READ A STATEMENT
+// Statement:
+//      declaration
+//      reassignment
+//      expression
+double statement()
+{
+    Token token = ts.get();
+    switch (token.kind)
+    {
+    case LET:
+        return declaration();
+    default:
+        ts.unget(token);
+        return expression();
+    }
+}
+
+// READ A DECLARATION
+// Declaration:
+//      "let" Name "=" Expression
+double declaration()
+{
+    try
+    {
+        Token token = ts.get();
+        if (token.kind != NAME)
+            throw std::runtime_error("Name expected in declaration => Error in declaration()");
+        std::string var = token.name;
+        if ((token = ts.get()).kind != '=')
+            throw std::runtime_error("= missing in the declaration of the variable" + token.name + " => Error in declaration()");
+
+        double val = expression();
+
+        return define_name(var, val);
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cout << "Oops! Error occured in Token.cpp => declaration()";
+        std::cout << e.what() << std::endl;
+        return 0;
+    }
+    catch (std::string &str)
+    {
+        std::cout << "Variable " << str << " already declared.\n";
+        return 0;
+    }
+}
+
+// READ A REASSIGNMENT
+//      Name "=" Expression
+double reassign()
+{
+}
+
 // READ AN EXPRESSION
-// Grammar for expression
 // Expression:
 //     Term
 //     Term + Expression
@@ -151,7 +257,6 @@ double expression()
 }
 
 // READ A TERM
-// Grammar for Term:
 //     Primary
 //     Primary * Term
 //     Primary / Term
@@ -180,13 +285,10 @@ double term()
 }
 
 // read a Primary
-//
-// Grammar for Primary:
-//     -Number
-//     Number
-//     constants like pi, e and so on
-//     '('Expression')'
-//     -'('Expression')'
+//      (+or-)Number
+//      (+or-)'('Expression')'
+//      variables
+//      constants
 double primary()
 {
     Token token = ts.get(); // receive a token from the input stream
@@ -269,102 +371,3 @@ double define_name(std::string var, double val)
 //     }
 // }
 
-// READ A DECLARATION
-// Declaration:
-//      "let" Name "=" Expression
-double declaration()
-{
-    try
-    {
-        Token token = ts.get();
-        if (token.kind != NAME)
-            throw std::runtime_error("Name expected in declaration => Error in declaration()");
-        std::string var = token.name;
-        if ((token = ts.get()).kind != '=')
-            throw std::runtime_error("= missing in the declaration of the variable" + token.name + " => Error in declaration()");
-
-        double val = expression();
-
-        return define_name(var, val);
-    }
-    catch (std::runtime_error &e)
-    {
-        std::cout << "Oops! Error occured in Token.cpp => declaration()";
-        std::cout << e.what() << std::endl;
-        return 0;
-    }
-    catch (std::string &str)
-    {
-        std::cout << "Variable " << str << " already declared.\n";
-        return 0;
-    }
-}
-
-// READ A STATEMENT
-// Statement:
-//      declaration
-//      expression
-double statement()
-{
-    Token token = ts.get();
-    switch (token.kind)
-    {
-    case LET:
-        return declaration();
-    default:
-        ts.unget(token);
-        return expression();
-    }
-}
-
-// handle the expression calculation part
-void calculate()
-{
-    std::cout << "Expression calculator program" << std::endl;
-    std::cout << "Please enter the expression you want to calculate below" << std::endl;
-    std::cout << "(NOTE: Enter q to QUIT and ; after the end of an expression)" << std::endl;
-    printline();
-
-    while (true)
-    {
-        try
-        {
-            std::cout << PROMPT;
-            Token token = ts.get();
-
-            // check whether input is expression or QUIT command
-            if (token.kind == QUIT)
-                return; // exit
-            else if (token.kind == TERMINATOR)
-                continue; // read another expression
-            else
-                ts.unget(token); // input is expression, unget and read expression()
-
-            // calculate the expression
-            double ans = statement();
-            ts.flush(); // flush out remaining TERMINATOR(';')
-
-            // do not print trailing zeroes after decimal point if number is an integer
-            long long int ans_int = ans;
-            if(ans_int-ans==0)
-                std::cout << RESULT << ans_int << std::endl; // print the RESULT
-            else
-                std::cout << RESULT << ans << std::endl; // print the RESULT
-        }
-        catch (std::runtime_error &e)
-        {
-            printline();
-            std::cout << "Error! ";
-            std::cout << e.what() << std::endl;
-            printline();
-
-            std::cin.ignore(100, '\n'); // ignore until ; is reached
-            ts.flush();                 // flush buffer
-
-            // bool exit = ask();     // to continue or exit program?
-            // if(exit)
-            //     break;
-            // }
-        }
-    }
-}
