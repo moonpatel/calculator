@@ -15,4 +15,4 @@ DONE:
 => Reassigning values to already created variables.
 => Add some constants
 => testcases:
-    > num; (shows errors)
+    > num;  (shows errors)
