@@ -2,6 +2,12 @@
 #define _UTILS_H_
 
 #include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <queue>
+#include <iomanip>
+#include <algorithm>
 
 // constanst used in the program
 const char NUM_KIND     = '~';      // Token with this kind represents a number

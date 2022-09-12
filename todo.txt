@@ -1,7 +1,8 @@
 TO DO:
 => Add some functions
 => Add HELP feature
-=> Wrap variables and constants map into a class along with its getters and setters and other functions
+=> Wrap variables and constants map into a class symbol_table along with its getters and setters and other functions
+    (contains get_value(), set_value(), var_table and const_table functions members)
 => Print result on entering '\n' instead of ';'
 => Add commands to the program like quit and help for example
 => Allow the user to declare constants

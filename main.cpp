@@ -13,8 +13,8 @@ Includes the following facilities:
 #include "Token.h"
 #include "numsystem.h"
 #include "utils.h"
-// #include "matrix.h"
 #include "functions.h"
+#include "symbol_table.h"
 
 
 using namespace std;
@@ -24,6 +24,7 @@ map<string,double> variables;
 map<string,double> constants;
 
 int main() {
+    symbolTable symbols;
     constants["pi"] = 3.14159265359;
     constants["e"] = 2.71828;
     cout << "WELCOME" << "\n";
